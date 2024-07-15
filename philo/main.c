@@ -3,71 +3,138 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: aaitelka <aaitelka@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 19:04:12 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/06/02 02:27:21 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/07/15 18:10:16 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/philo.h"
-#include <string.h>
-#include <stdlib.h>
-#include <sys/time.h>
 
-void	*routine()
+long	get_timestamp()
 {
-	write (1, "feel like a philo\n", 18);
+	struct timeval	tv;
+	long			timestamp;
+
+	if (gettimeofday(&tv, NULL) == -1)
+			write(1, EGETTIME, strlen(EGETTIME));
+	timestamp = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+	return (timestamp);
 }
 
-void	create_mutex(pthread_mutex_t *mutex)
+void	delay(long millis)
 {
-	if (pthread_mutex_init(mutex, NULL) != SUCCES)
-		write(STDERR_FILENO, ERR_MUTEX_INIT, strlen(ERR_MUTEX_INIT));
+	struct timeval	tv;
+	long			timestamp;
+
+	sleep(50);
+	if (gettimeofday(&tv, NULL) == -1)
+		write(1, EGETTIME, strlen(EGETTIME));
+	timestamp = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+	long mil = get_timestamp();
+	while (1)
+	{
+		if (timestamp >= millis)
+			break ;
+		usleep(20);
+	}
 }
 
-void	create_threads(t_philo *philo, int size)
+void ft_lock(t_philo *philo, int id)
+{
+	pthread_mutex_lock(&philo->forks[id]);
+	philo->forks_count = 0;
+	philo->id++;
+	pthread_mutex_unlock(&philo->forks[id]);
+}
+
+// void	take_right_fork(t_philo *philo)
+// {
+// 	pthread_mutex_lock(&philo->forks[0]);
+// 	philo->forks_count++;
+// 	printf("philo %d has taken a fork\n", philo->id);
+// 	pthread_mutex_lock(&philo->forks[1]);
+// }
+
+void	*routine(void *param)
+{
+	t_philo *philo;
+	
+	philo = (t_philo *)param;
+	
+	pthread_mutex_lock(&philo->forks[philo->id]);
+	if (philo->id % 2)
+	{
+		printf("philo %d has taken a fork\n", philo->id);
+		pthread_mutex_lock(&philo->forks[philo->id + 1]);
+	}
+	int i = 10;
+	int mod = 2;
+	
+	while (philo->id % mod && i)
+	{
+		if (philo->forks_count < 2)
+		{
+			philo->forks_count = 2;
+			printf("philo %d has taken a fork\n", philo->id);
+		}
+		else
+			printf("philo %d is eating\n", philo->id);
+		--i;
+	}
+	pthread_mutex_unlock(&philo->forks[philo->id + 1]);
+	pthread_mutex_unlock(&philo->forks[philo->id]);
+	return (NULL);
+}
+
+void	create_philos(t_philo *philo)
 {
 	int	i;
 
 	i = 0;
-	while (i < size)
+	philo->id =0;
+	philo->philos = malloc(philo->count * sizeof(pthread_t));
+	if (!philo->philos)
+		write(STDERR_FILENO, EALLOCATE, strlen(EALLOCATE));
+	while (i < philo->count)
 	{
-		if (pthread_create(&philo->philos[i], NULL, routine, NULL) != SUCCES)
-			write(STDERR_FILENO, ERR_THREAD_CREATE, strlen(ERR_THREAD_CREATE));
+		ft_lock(philo, i);
+		if (pthread_create(&philo->philos[i], NULL, routine, philo) != SUCCES)
+			write(STDERR_FILENO, ECREATE, strlen(ECREATE));
+		printf("thread [%d] created\n", i+1);
 		i++;
 	}
 }
 
-void	join_treads(t_philo *philo, int size)
+void	join_philos(t_philo *philo)
 {
 	int	i;
 
 	i = 0;
-	while (i < size)
+	while (i < philo->count)
 	{
 		if (pthread_join(philo->philos[i], NULL) != SUCCES)
-			write(STDERR_FILENO, ERR_THREAD_JOIN, strlen(ERR_THREAD_JOIN));
+			write(STDERR_FILENO, EJOIN, strlen(EJOIN));
 		i++;
 	}
 }
 
-void create_philos(t_philo *philo)
+void	create_mutex(t_philo *philo)
 {
-	int			i;
-	int			count;
+	int	i;
 
 	i = 0;
-	count = philo->count;
-	philo->philos = malloc(count);
-	if (!philo->philos)
-		write(STDERR_FILENO, ERR_ALLOCATION, strlen(ERR_ALLOCATION));
-	philo->forks = malloc(count);
+	philo->forks = malloc(philo->count * sizeof(pthread_mutex_t));
 	if (!philo->forks)
-		write(STDERR_FILENO, ERR_ALLOCATION, strlen(ERR_ALLOCATION));
-	create_threads(philo, count);
-	join_treads(philo, count);
-	
+		write(STDERR_FILENO, EALLOCATE, strlen(EALLOCATE));
+	while (i < philo->count)
+	{
+		if (pthread_mutex_init(&philo->forks[i], NULL) != SUCCES)
+			write(STDERR_FILENO, EMUTEXINIT, strlen(EMUTEXINIT));
+		// printf("mutex [%d] created\n", i+1);
+		i++;
+	}
 }
 
 void	init_philos(t_philo *philo, int ac, char **av)
@@ -86,19 +153,64 @@ void	init_philos(t_philo *philo, int ac, char **av)
 
 void	launch(t_philo *philo, int ac, char **av)
 {
-	if (ac >= 5 && ac <= 6)
+	init_philos(philo, ac ,av);
+	create_mutex(philo);
+	create_philos(philo);
+	join_philos(philo);
+}
+
+int input_error(char **av)
+{
+	int	i;
+	int	j;
+
+	i = 1;
+	while (av[i])
 	{
-		init_philos(philo, ac ,av);
-		create_philos(philo);
+		j = 0;
+		while (av[i][j])
+		{
+			if (!isdigit(av[i][j]))
+				return (1);
+			j++;
+		}
+		i++;
 	}
-	else
-		printf("Error args\n");
+	return (0);
+}
+
+void parse(char **av)
+{
+	int	result;
+
+	if (input_error(av))
+		printf("Error input\n");
+
+}
+
+void	destroy_threads(t_philo *philo)
+{
+	int i;
+
+	i = 0;
+	while (&philo->forks[i])
+	{
+		pthread_mutex_destroy(&philo->forks[i]);
+		i++;
+	}
 }
 
 int	main(int ac, char **av)
 {
 	t_philo	philo;
-
-	launch(&philo, ac, av);
+	
+	if (ac == 5 || ac == 6)
+	{
+		// parse(av);
+		launch(&philo, ac, av);
+	}
+	else
+		printf("Error args\n");
+	// destroy_threads(&philo);
 	return (EXIT_SUCCESS);
 }
