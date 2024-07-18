@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 19:39:23 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/07/15 12:03:34 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/07/17 09:55:16 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,9 @@ typedef struct s_philo
 {
 	int				id;
 	int				count;
-	int				should_eat;
+	// int				should_eat;
 	int				forks_count;
+	int				must_eat;
 	long			time_to[4];
 	pthread_t		*philos;
 	pthread_mutex_t	*forks;

@@ -6,11 +6,16 @@
 /*   By: aaitelka <aaitelka@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 19:04:12 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/07/15 18:10:16 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/07/18 15:20:48 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/philo.h"
+
+// EAT
+// SLEEP
+// THINK
+// DIE
 
 long	get_timestamp()
 {
@@ -35,7 +40,7 @@ void	delay(long millis)
 	long mil = get_timestamp();
 	while (1)
 	{
-		if (timestamp >= millis)
+		if (mil >= millis)
 			break ;
 		usleep(20);
 	}
@@ -49,39 +54,46 @@ void ft_lock(t_philo *philo, int id)
 	pthread_mutex_unlock(&philo->forks[id]);
 }
 
-// void	take_right_fork(t_philo *philo)
-// {
-// 	pthread_mutex_lock(&philo->forks[0]);
-// 	philo->forks_count++;
-// 	printf("philo %d has taken a fork\n", philo->id);
-// 	pthread_mutex_lock(&philo->forks[1]);
-// }
+void	take_right_fork(t_philo *philo)
+{
+	pthread_mutex_lock(&philo->forks[philo->id]);
+	if (philo->id % 2)
+		pthread_mutex_lock(&philo->forks[philo->id + 1]);
+	else
+		pthread_mutex_lock(&philo->forks[philo->id - 1]);
+	printf("philo %d has taken a fork\n", philo->id);
+}
+
+void take_own_fork(t_philo *philo)
+{
+	// if (philo->forks_count < 2)
+	// 	philo->forks_count = 2;
+	printf("philo %d has taken a fork\n", philo->id);
+}
+
+void	ft_eat(t_philo *philo, long time)
+{
+	printf("%ld %d is eating\n", time, philo->id);
+	// sleep(philo->time_to[EAT]);
+}
 
 void	*routine(void *param)
 {
 	t_philo *philo;
-	
+
 	philo = (t_philo *)param;
-	
-	pthread_mutex_lock(&philo->forks[philo->id]);
-	if (philo->id % 2)
+	take_right_fork(philo);
+	long ttime = get_timestamp() + philo->time_to[DIE];
+	take_own_fork(philo);
+	while (get_timestamp() <= ttime)
 	{
-		printf("philo %d has taken a fork\n", philo->id);
-		pthread_mutex_lock(&philo->forks[philo->id + 1]);
-	}
-	int i = 10;
-	int mod = 2;
-	
-	while (philo->id % mod && i)
-	{
-		if (philo->forks_count < 2)
-		{
-			philo->forks_count = 2;
-			printf("philo %d has taken a fork\n", philo->id);
-		}
+		printf("time : %ld\n", ttime - get_timestamp());
+		if (philo->id % 2)
+			printf("%ld %d is eating\n", time, philo->id);
 		else
-			printf("philo %d is eating\n", philo->id);
-		--i;
+			printf("%ld %d is sleeping\n", ttime, philo->id);
+		// sleep(philo->time_to[EAT]);
+		usleep(800);
 	}
 	pthread_mutex_unlock(&philo->forks[philo->id + 1]);
 	pthread_mutex_unlock(&philo->forks[philo->id]);
@@ -97,12 +109,13 @@ void	create_philos(t_philo *philo)
 	philo->philos = malloc(philo->count * sizeof(pthread_t));
 	if (!philo->philos)
 		write(STDERR_FILENO, EALLOCATE, strlen(EALLOCATE));
+	// set_philo_id(philo);
 	while (i < philo->count)
 	{
 		ft_lock(philo, i);
-		if (pthread_create(&philo->philos[i], NULL, routine, philo) != SUCCES)
+		if (pthread_create(&philo->philos[i], NULL, routine, philo) != SUCCES) 
 			write(STDERR_FILENO, ECREATE, strlen(ECREATE));
-		printf("thread [%d] created\n", i+1);
+		// printf("thread [%d] created\n", i+1);
 		i++;
 	}
 }
@@ -114,7 +127,7 @@ void	join_philos(t_philo *philo)
 	i = 0;
 	while (i < philo->count)
 	{
-		if (pthread_join(philo->philos[i], NULL) != SUCCES)
+		if (pthread_detach(philo->philos[i]) != SUCCES)
 			write(STDERR_FILENO, EJOIN, strlen(EJOIN));
 		i++;
 	}
