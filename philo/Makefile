@@ -3,37 +3,38 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: aaitelka <aaitelka@student.42.fr>          +#+  +:+       +#+         #
+#    By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/30 19:05:56 by aaitelka          #+#    #+#              #
-#    Updated: 2024/07/14 20:15:46 by aaitelka         ###   ########.fr        #
+#    Updated: 2024/08/07 11:04:17 by aaitelka         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME	:= philo
-HEAD	:= include/philo.h
+NAME    := philo
+INCLUDE := include/
+CC      := cc -pthread -fsanitize=thread
+CFLAGS  := -g -I$(INCLUDE) -Wall -Werror -Wextra 
 
-CC		:= cc -pthread -fsanitize=thread
-CFLAGS	:= -g  #-Wall -Werror -Wextra 
+SRCS    := $(shell find . -type f -name "*.c")
 
-SRCS	:= main.c
+OBJS_DIR        = build/
+OBJS            = $(patsubst %.c,$(OBJS_DIR)%.o,$(SRCS))
 
-OBJS	:= $(SRCS:%c=%o)
-.PHONY: all
-all		: $(NAME)
+all: $(NAME)
 
-%o		: %c $(HEAD)
-		$(CC) $(CFLAGS) -c $< -o $@
-.PHONY: $(NAME)
-$(NAME) : $(OBJS)
-		$(CC) $(CFLAGS) $^ -o $@
+$(OBJS_DIR)%.o: %.c $(INCLUDE)philo.h
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
 
-clean	:
-		$(RM) $(OBJS)
+$(NAME): $(OBJS)
+	$(CC) $(CFLAGS) $^ -o $@
 
-fclean : clean
-		$(RM) $(NAME)
+clean:
+	$(RM) -r $(OBJS_DIR)
 
-re		: fclean all
+fclean: clean
+	$(RM) $(NAME)
 
-.PHONY	: clean
+re: fclean all
+
+.PHONY: all clean fclean re
