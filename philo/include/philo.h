@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 19:39:23 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/07 11:53:47 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/12 17:09:21 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,9 @@
 # include <pthread.h>
 # include <sys/time.h>
 
+# define ERROR -1
 # define SUCCES 0
+# define FAILURE 1
 # define MINTIME 60
 
 enum e_state
@@ -41,6 +43,8 @@ typedef enum e_code
 	EALLOCATE,
 	EMUTEXINIT,
 	EOUTOFRANGE,
+	EMUTEXLOCK,
+	ERROR_COUNT
 }	t_code;
 
 typedef struct s_philo
@@ -58,7 +62,17 @@ typedef struct s_table
 	t_philo			*philos;
 }	t_table;
 
-void	create(t_table *table, char **av, void *(*rout)(void *));
+void	create_table(t_table *table, char **av);
+
+/** TIME */
 long	get_timestamp();
+
+/** PARSER */
+long	to_long(const char *str);
+int		check_args(t_table *table);
+
+/** LOGGER */
+void	ft_logger(t_code code);
+void	*routine(void *arg);
 
 #endif

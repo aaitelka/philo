@@ -6,113 +6,101 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/06 18:21:24 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/07 12:32:28 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/12 18:59:50 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-static long	to_long(char *str)
+static int init_locks(t_table *table)
 {
-	int		i;
-	long	res;
+	int	index;
 
-	i = 0;
-	res = 0;
-	if (str[i] == '\0')
-		return (-1);
-	while (str[i])
+	index = 0;
+	while (index < table->philo_count)
 	{
-		if (str[i] < '0' || str[i] > '9')
-			return (-1);
-		res = res * 10 + str[i] - '0';
-		i++;
+		if (pthread_mutex_init(&table->philos[index].fork, NULL) != SUCCES)
+			return (EMUTEXINIT);
+		index++;
 	}
-	return (res);
-}
-
-static void	assert_error(t_code code)
-{
-	char	*error[7];
-	int		i;
-	int		size;
-
-	i = -1;
-	error[EARGS] = "Error: wrong argument\n";
-	error[EJOIN] = "Error: joining thread\n";
-	error[ECREATE] = "Error: pthread_create: failed\n";
-	error[EGETTIME] = "Error: gettimeofday: failed\n";
-	error[EALLOCATE] = "Error: allocation, malloc failed\n";
-	error[EMUTEXINIT] = "Error: pthread_mutex_init: failed\n";
-	error[EOUTOFRANGE] = "Error: number of philosophers out of range\n";
-	size = sizeof(error) / sizeof(error[0]);
-	while (++i < size)
-	{
-		if (i == (int)code)
-		{
-			printf("%s", error[i]);
-			break ;
-		}
-	}
-}
-
-static int	check_args(t_table *table)
-{
-	if (table->timeto[DIE] < MINTIME || table->timeto[EAT] < MINTIME
-		|| table->timeto[SLEEP] < MINTIME || table->timeto[MUST_EAT] < 0)
-		return (-1);
-	else if (table->philo_count > 200)
-		return (EOUTOFRANGE);
 	return (SUCCES);
 }
 
-static int	init(t_table *table, char **av)
+static int create_philos(t_table *table)
 {
-	int	i;
+	int	index;
+
+	index = 0;
+	while (index < table->philo_count)
+	{
+		if (pthread_create(&table->philos[index].philo, NULL, &routine, table) != SUCCES)
+			return (ECREATE);
+		index++;
+	}
+	return (SUCCES);
+}
+
+static int join_philos(t_philo *philos)
+{
+	int	index;
+
+	index = 0;
+	while (philos[index].id)
+	{
+		if (pthread_join(philos[index].philo, NULL) != SUCCES)
+			return (EJOIN);
+		index++;
+	}
+	return (SUCCES);
+}
+
+static void set_ids(t_philo *philos, int size)
+{
+	int				index;
+	pthread_mutex_t	lock;
+
+	index = 0;
+	while (index < size)
+	{
+		philos[index].id = index + 1;
+		index++;
+	}
+}
+
+static int	init_table(t_table *table, char **argv)
+{
+	int	index;
 	int	args;
-	
-	i = -1;
-	table->philo_count = to_long(av[1]);
-	while (++i < 3)
-		table->timeto[i] = to_long(av[i + 2]);
-	table->timeto[MUST_EAT] = (av[5]) ? to_long(av[5]) : -1;
-		printf("must eat = %ld\n", table->timeto[MUST_EAT]);
+
+	index = -1;
+	while (++index < 3)
+		table->timeto[index] = to_long(argv[index + 2]);
+	if(argv[5])
+		table->timeto[MUST_EAT] = to_long(argv[5]);
+	else
+		table->timeto[MUST_EAT] = -1;
+	table->start_time = get_timestamp();
+	set_ids(table->philos, table->philo_count);
 	args = check_args(table);
 	if (args != SUCCES)
 		return (args);
-	i = -1;
-	while (++i < table->philo_count)
-	{
-		table->philos[i].id = (i + 1);
-		if (pthread_mutex_init(&table->philos[i].fork, NULL) != SUCCES)
-			return (EMUTEXINIT);
-	}
 	return (SUCCES);
 }
 
-void	create(t_table *table, char **av, void *(*rout)(void *))
+void	create_table(t_table *table, char **argv)
 {
-	int	i;
-
-	i = -1;
-	table->philos = malloc(sizeof(t_philo) * to_long(av[1]));
+	table->philo_count = to_long(argv[1]);
+	table->philos = malloc(sizeof(t_philo) * table->philo_count);
 	if (!table->philos)
-		return (assert_error(EALLOCATE));
-	if (init(table, av) != SUCCES)
-		return (assert_error(EARGS));
-	while (table->philos[++i].id)
-	{
-		if (pthread_create(&table->philos[i].philo, NULL, \
-			rout, &table->philos[i]) != SUCCES)
-			return (assert_error(ECREATE));
-	}
-	table->start_time = get_timestamp();
+		return (ft_logger(EALLOCATE));
+	if (init_table(table, argv) != SUCCES)
+		return (ft_logger(EARGS));
+	if (init_locks(table) != SUCCES)
+		return (ft_logger(EMUTEXINIT));
+	if (create_philos(table) != SUCCES)
+		return (ft_logger(ECREATE));
 	if (table->start_time == -1)
-		return (assert_error(EGETTIME));
-	i = -1;
-	while (table->philos[++i].id)
-	{
-		if (pthread_join(table->philos[i].philo, NULL) != SUCCES)
-			return (assert_error(EJOIN));
-	}
+		return (ft_logger(EGETTIME));
+	if (join_philos(table->philos) != SUCCES)
+		return (ft_logger(EJOIN));
 }
