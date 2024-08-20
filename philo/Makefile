@@ -6,19 +6,19 @@
 #    By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/30 19:05:56 by aaitelka          #+#    #+#              #
-#    Updated: 2024/08/12 15:56:19 by aaitelka         ###   ########.fr        #
+#    Updated: 2024/08/20 16:07:28 by aaitelka         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME    := philo
-INCLUDE := include/
-CC      := cc   -pthread -fsanitize=thread
-CFLAGS  := -g -I$(INCLUDE) # -Wall -Werror -Wextra 
+NAME     := philo
+INCLUDE  := include/
+CC       := cc   -pthread -fsanitize=thread
+CFLAGS   := -g -I$(INCLUDE) #-Wall -Werror -Wextra 
 
-SRCS    := $(shell find . -type f -name "*.c")
+SRCS     := $(shell find . -type f -name "*.c")
 
-OBJS_DIR        = build/
-OBJS            = $(patsubst %.c,$(OBJS_DIR)%.o,$(SRCS))
+OBJS_DIR = build/
+OBJS     = $(patsubst %.c,$(OBJS_DIR)%.o,$(SRCS))
 
 all: $(NAME)
 

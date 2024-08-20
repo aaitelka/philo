@@ -1,24 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_time.c                                          :+:      :+:    :+:   */
+/*   ft_observer.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/08/07 11:20:08 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/19 16:46:53 by aaitelka         ###   ########.fr       */
+/*   Created: 2024/08/17 13:38:47 by aaitelka          #+#    #+#             */
+/*   Updated: 2024/08/20 16:08:08 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-long	get_timestamp(void)
+void	observer(t_philo *philo)
 {
-	struct timeval	tv;
-	long			timestamp;
+	int		index;
 
-	if (gettimeofday(&tv, NULL) != SUCCES)
-		return (-1);
-	timestamp = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-	return (timestamp);
+	index = 0;
+		printf("----------> is_done: %d\n", philo->table->is_done);
+	while (true)
+	{
+		printf("----------> is_done: %d\n", philo->table->is_done);
+		if (get_timestamp() - philo[index].last_eat > philo->table->timeto[DIE])
+		{
+			philo->table->is_done = true;
+			ft_print(&philo[index], DIE);
+			break ;
+		}
+		index++;
+		if (index == philo->table->philo_count)
+			index = 0;
+	}
 }
