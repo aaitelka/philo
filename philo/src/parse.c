@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_parse.c                                         :+:      :+:    :+:   */
+/*   parse.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/12 13:24:29 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/19 16:58:23 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/21 14:24:32 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-long	to_long(const char *str)
+long	ft_tolong(const char *str)
 {
 	int		index;
 	long	result;
@@ -34,7 +34,7 @@ long	to_long(const char *str)
 }
 
 // table->timeto[MUST_EAT] < 0) //TODO check this condition
-int	check_args(t_table *table)
+int	ft_check_args(t_table *table)
 {
 	if (table->timeto[DIE] < MINTIME
 		|| table->timeto[EAT] < MINTIME
@@ -42,5 +42,5 @@ int	check_args(t_table *table)
 		return (-1);
 	else if (table->philo_count > 200)
 		return (EOUTOFRANGE);
-	return (SUCCES);
+	return (SUCCESS);
 }

@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 19:39:23 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/21 02:25:18 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/21 15:38:19 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 # include <limits.h>
 
 # define ERROR -1
-# define SUCCES 0
+# define SUCCESS 0
 # define FAILURE 1
 # define MINTIME 60
 
@@ -32,6 +32,16 @@
 # define MSLEEP " is sleeping"
 # define MTHINK " is thinking"
 # define MDIE " died"
+
+# define MEARGS "Error: Invalid arguments\n"
+# define MEJOIN "Error: pthread_join failed\n"
+# define MECREATE "Error: pthread_create failed\n"
+# define MEGETTIME "Error: gettimeofday failed\n"
+# define MEALLOCATE "Error: allocation, malloc failed\n"
+# define MEMUTEXINIT "Error: pthread_mutex_init failed\n"
+# define MEMUTEXLOCK "Error: pthread_mutex_lock failed\n"
+# define MEOUTOFRANGE "Error: number of philosophers out of range\n"
+# define MEMUTEXDESTROY "Error: pthread_mutex_destroy failed\n"
 
 typedef enum e_state
 {
@@ -51,12 +61,12 @@ typedef enum e_code
 	EGETTIME,
 	EALLOCATE,
 	EMUTEXINIT,
-	EOUTOFRANGE,
 	EMUTEXLOCK,
-	ERROR_COUNT
+	EOUTOFRANGE,
+	EMUTEXDESTROY,
 }	t_code;
 
-typedef struct s_table t_table;
+typedef struct s_table	t_table;
 
 typedef struct s_philo
 {
@@ -79,17 +89,17 @@ struct s_table
 	t_philo			*philos;
 	pthread_mutex_t	lock;
 	pthread_mutex_t	print_lock;
-
 };
 
-int		check_args(t_table *table);
-long	gettimestamp(void);
-long	to_long(const char *str);
-long	getstarttime(t_table *table);
-void	ft_logger(t_code code);
-void	observer(t_table *table);
-void	simulate(t_table *table, char **av);
+int		ft_check_args(t_table *table);
+long	ft_gettimestamp(void);
+long	ft_tolong(const char *str);
+long	ft_getstarttime(t_table *table);
+void	ft_error(const char *str);
+void	ft_observer(t_table *table);
+void	ft_simulate(t_table *table, char **av);
 void	ft_print(t_philo *philo, t_state state);
 void	*ft_routine(void *arg);
+bool	ft_is_done(t_table *table);
 
 #endif

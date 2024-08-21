@@ -1,24 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_time.c                                          :+:      :+:    :+:   */
+/*   ft_utils.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/08/07 11:20:08 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/20 23:23:06 by aaitelka         ###   ########.fr       */
+/*   Created: 2024/08/21 02:42:32 by aaitelka          #+#    #+#             */
+/*   Updated: 2024/08/21 13:57:33 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-long	gettimestamp(void)
+bool	ft_is_done(t_table *table)
 {
-	struct timeval	tv;
-	long			timestamp;
+	bool	done;
 
-	if (gettimeofday(&tv, NULL) != SUCCES)
-		return (-1);
-	timestamp = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-	return (timestamp);
+	pthread_mutex_lock(&table->lock);
+	done = table->is_done;
+	pthread_mutex_unlock(&table->lock);
+	return (done);
+}
+
+long	ft_getstarttime(t_table *table)
+{
+	long	time;
+
+	pthread_mutex_lock(&table->lock);
+	time = table->start_time;
+	pthread_mutex_unlock(&table->lock);
+	return (time);
 }

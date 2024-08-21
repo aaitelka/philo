@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_observer.c                                      :+:      :+:    :+:   */
+/*   observer.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/17 13:38:47 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/21 02:56:16 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/21 15:33:11 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-static long	getlasteat(t_philo *philo)
+static long	ft_getlasteat(t_philo *philo)
 {
 	long	last_eat;
 
@@ -22,10 +22,20 @@ static long	getlasteat(t_philo *philo)
 	return (last_eat);
 }
 
+static long	ft_geteatcount(t_philo *philo)
+{
+	long	eat_count;
+
+	pthread_mutex_lock(&philo->lock);
+	eat_count = philo->eat_count;
+	pthread_mutex_unlock(&philo->lock);
+	return (eat_count);
+}
+
 static void	ft_die(t_table *table, int *i)
 {
 	pthread_mutex_lock(&table->print_lock);
-	printf("%ld\t%d %s\n", gettimestamp() - table->start_time,
+	printf("%ld\t%d %s\n", ft_gettimestamp() - table->start_time,
 		table->philos[*i].id, " died");
 	pthread_mutex_unlock(&table->print_lock);
 	pthread_mutex_lock(&table->lock);
@@ -33,29 +43,39 @@ static void	ft_die(t_table *table, int *i)
 	pthread_mutex_unlock(&table->lock);
 }
 
-void	observer(t_table *table)
+static void	ft_eating_done(t_table *table)
+{
+	if (table->timeto[MUST_EAT] == -1)
+		return ;
+	pthread_mutex_lock(&table->lock);
+	table->is_done = true;
+	pthread_mutex_unlock(&table->lock);
+}
+
+void	ft_observer(t_table *table)
 {
 	int		i;
-	long	time;
+	long	last_eat;
 
 	i = 0;
 	while (true)
 	{
-		if (getlasteat(&table->philos[i]) == 0)
+		if (ft_geteatcount(&table->philos[i]) >= table->timeto[MUST_EAT] + 1)
 		{
-			i++;
-			if (i == table->philo_count)
-				i = 0;
+			ft_eating_done(table);
+			break ;
+		}
+		last_eat = ft_getlasteat(&table->philos[i]);
+		if (last_eat == 0)
+		{
+			i = (i + 1) % table->philo_count;
 			continue ;
 		}
-		time = gettimestamp() - getlasteat(&table->philos[i]);
-		if (time >= table->timeto[DIE])
+		if (ft_gettimestamp() - last_eat >= table->timeto[DIE])
 		{
 			ft_die(table, &i);
 			break ;
 		}
-		i++;
-		if (i == table->philo_count)
-			i = 0;
+		i = (i + 1) % table->philo_count;
 	}
 }
