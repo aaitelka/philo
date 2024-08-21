@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/12 13:21:01 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/20 15:39:25 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/21 02:26:02 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,16 @@ static void	log(const char *str, int fd)
 {
 	while (*str)
 		write(fd, str++, 1);
+}
+
+static bool	is_done(t_table *table)
+{
+	bool	done;
+
+	pthread_mutex_lock(&table->lock);
+	done = table->is_done;
+	pthread_mutex_unlock(&table->lock);
+	return (done);
 }
 
 void	ft_logger(t_code code)
@@ -39,6 +49,16 @@ void	ft_logger(t_code code)
 		log("Error: unknown error occured\n", STDERR_FILENO);
 }
 
+long	getstarttime(t_table *table)
+{
+	long	time;
+
+	pthread_mutex_lock(&table->lock);
+	time = table->start_time;
+	pthread_mutex_unlock(&table->lock);
+	return (time);
+}
+
 void	ft_print(t_philo *philo, t_state state)
 {
 	int		id;
@@ -46,16 +66,17 @@ void	ft_print(t_philo *philo, t_state state)
 
 	id = philo->id;
 	pthread_mutex_lock(&philo->table->print_lock);
-	time = philo->table->start_time;
-	if (state == TAKEN_FORK)
-		printf("%ld\t%d %s\n", get_timestamp() - time, id, " has taken a fork");
-	else if (state == EAT)
-		printf("%ld\t%d %s\n", get_timestamp() - time, id, " is eating");
-	else if (state == SLEEP)
-		printf("%ld\t%d %s\n", get_timestamp() - time, id, " is sleeping");
-	else if (state == THINK)
-		printf("%ld\t%d %s\n", get_timestamp() - time, id, " is thinking");
-	else if (state == DIE)
-		printf("%ld\t%d %s\n", get_timestamp() - time, id, " died");
+	if (!is_done(philo->table))
+	{
+		time = getstarttime(philo->table);
+		if (state == TAKEN_FORK)
+			printf("%ld\t%d %s\n", gettimestamp() - time, id, MTAKEN_FORK);
+		else if (state == EAT)
+			printf("%ld\t%d %s\n", gettimestamp() - time, id, MEAT);
+		else if (state == SLEEP)
+			printf("%ld\t%d %s\n", gettimestamp() - time, id, MSLEEP);
+		else if (state == THINK)
+			printf("%ld\t%d %s\n", gettimestamp() - time, id, MTHINK);
+	}
 	pthread_mutex_unlock(&philo->table->print_lock);
 }

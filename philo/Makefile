@@ -6,14 +6,14 @@
 #    By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/05/30 19:05:56 by aaitelka          #+#    #+#              #
-#    Updated: 2024/08/20 16:07:28 by aaitelka         ###   ########.fr        #
+#    Updated: 2024/08/21 02:54:26 by aaitelka         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME     := philo
 INCLUDE  := include/
-CC       := cc   -pthread -fsanitize=thread
-CFLAGS   := -g -I$(INCLUDE) #-Wall -Werror -Wextra 
+CC       := cc -pthread #-fsanitize=thread
+CFLAGS   := -g -I$(INCLUDE) -Wall -Werror -Wextra 
 
 SRCS     := $(shell find . -type f -name "*.c")
 
@@ -37,4 +37,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: clean

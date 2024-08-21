@@ -6,29 +6,56 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/17 13:38:47 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/20 16:08:08 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/21 02:56:16 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	observer(t_philo *philo)
+static long	getlasteat(t_philo *philo)
 {
-	int		index;
+	long	last_eat;
 
-	index = 0;
-		printf("----------> is_done: %d\n", philo->table->is_done);
+	pthread_mutex_lock(&philo->lock);
+	last_eat = philo->last_eat;
+	pthread_mutex_unlock(&philo->lock);
+	return (last_eat);
+}
+
+static void	ft_die(t_table *table, int *i)
+{
+	pthread_mutex_lock(&table->print_lock);
+	printf("%ld\t%d %s\n", gettimestamp() - table->start_time,
+		table->philos[*i].id, " died");
+	pthread_mutex_unlock(&table->print_lock);
+	pthread_mutex_lock(&table->lock);
+	table->is_done = true;
+	pthread_mutex_unlock(&table->lock);
+}
+
+void	observer(t_table *table)
+{
+	int		i;
+	long	time;
+
+	i = 0;
 	while (true)
 	{
-		printf("----------> is_done: %d\n", philo->table->is_done);
-		if (get_timestamp() - philo[index].last_eat > philo->table->timeto[DIE])
+		if (getlasteat(&table->philos[i]) == 0)
 		{
-			philo->table->is_done = true;
-			ft_print(&philo[index], DIE);
+			i++;
+			if (i == table->philo_count)
+				i = 0;
+			continue ;
+		}
+		time = gettimestamp() - getlasteat(&table->philos[i]);
+		if (time >= table->timeto[DIE])
+		{
+			ft_die(table, &i);
 			break ;
 		}
-		index++;
-		if (index == philo->table->philo_count)
-			index = 0;
+		i++;
+		if (i == table->philo_count)
+			i = 0;
 	}
 }

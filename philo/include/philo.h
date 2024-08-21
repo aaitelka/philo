@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 19:39:23 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/20 15:55:14 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/21 02:25:18 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,12 @@
 # define SUCCES 0
 # define FAILURE 1
 # define MINTIME 60
+
+# define MTAKEN_FORK " has taken a fork"
+# define MEAT " is eating"
+# define MSLEEP " is sleeping"
+# define MTHINK " is thinking"
+# define MDIE " died"
 
 typedef enum e_state
 {
@@ -55,11 +61,12 @@ typedef struct s_table t_table;
 typedef struct s_philo
 {
 	int				id;
-	int				last_eat;
-	int				eat_count;
+	long			last_eat;
+	long			eat_count;
 	t_table			*table;
 	pthread_t		philo;
 	pthread_mutex_t	fork;
+	pthread_mutex_t	lock;
 	pthread_mutex_t	*left;
 }	t_philo;
 
@@ -72,15 +79,16 @@ struct s_table
 	t_philo			*philos;
 	pthread_mutex_t	lock;
 	pthread_mutex_t	print_lock;
-	pthread_mutex_t	observer_lock;
+
 };
 
 int		check_args(t_table *table);
-long	get_timestamp();
+long	gettimestamp(void);
 long	to_long(const char *str);
+long	getstarttime(t_table *table);
 void	ft_logger(t_code code);
-void	observer(t_philo *philo);
-void	create_table(t_table *table, char **av);
+void	observer(t_table *table);
+void	simulate(t_table *table, char **av);
 void	ft_print(t_philo *philo, t_state state);
 void	*ft_routine(void *arg);
 
