@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/06 18:21:24 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/21 14:10:17 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/22 03:21:16 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,10 @@ static int	ft_table(t_table *table, char **argv)
 	while (++index < 3)
 		table->timeto[index] = ft_tolong(argv[index + 2]);
 	if (argv[5])
+	{
 		table->timeto[MUST_EAT] = ft_tolong(argv[5]);
+		table->has_must_eat = true;
+	}
 	else
 		table->timeto[MUST_EAT] = -1;
 	index = -1;

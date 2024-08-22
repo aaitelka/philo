@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/17 13:38:47 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/21 15:33:11 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/22 03:39:55 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ static void	ft_die(t_table *table, int *i)
 {
 	pthread_mutex_lock(&table->print_lock);
 	printf("%ld\t%d %s\n", ft_gettimestamp() - table->start_time,
-		table->philos[*i].id, " died");
+		table->philos[*i].id, MDIE);
 	pthread_mutex_unlock(&table->print_lock);
 	pthread_mutex_lock(&table->lock);
 	table->is_done = true;
@@ -45,8 +45,6 @@ static void	ft_die(t_table *table, int *i)
 
 static void	ft_eating_done(t_table *table)
 {
-	if (table->timeto[MUST_EAT] == -1)
-		return ;
 	pthread_mutex_lock(&table->lock);
 	table->is_done = true;
 	pthread_mutex_unlock(&table->lock);
@@ -54,13 +52,14 @@ static void	ft_eating_done(t_table *table)
 
 void	ft_observer(t_table *table)
 {
-	int		i;
 	long	last_eat;
+	int		i;
 
 	i = 0;
 	while (true)
 	{
-		if (ft_geteatcount(&table->philos[i]) >= table->timeto[MUST_EAT] + 1)
+		if (ft_geteatcount(&table->philos[i]) >= (table->timeto[MUST_EAT] + 1)
+			&& table->has_must_eat)
 		{
 			ft_eating_done(table);
 			break ;

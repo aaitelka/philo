@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/30 19:39:23 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/21 15:38:19 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/22 03:43:07 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,8 +84,9 @@ struct s_table
 {
 	int				philo_count;
 	long			timeto[4];
-	bool			is_done;
 	long			start_time;
+	bool			is_done;
+	bool			has_must_eat;
 	t_philo			*philos;
 	pthread_mutex_t	lock;
 	pthread_mutex_t	print_lock;
