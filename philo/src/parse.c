@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/12 13:24:29 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/22 03:28:58 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/22 17:22:30 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,12 +40,12 @@ long	ft_tolong(const char *str)
 
 int	ft_check_args(t_table *table)
 {
-	if (table->timeto[DIE] < MINTIME
+	if (table->philo_count > 200 || table->philo_count < 1)
+		return (EOUTOFRANGE);
+	else if (table->timeto[DIE] < MINTIME
 		|| table->timeto[EAT] < MINTIME
 		|| table->timeto[SLEEP] < MINTIME
 		|| (table->timeto[MUST_EAT] < 1 && table->has_must_eat))
 		return (ERROR);
-	else if (table->philo_count > 200)
-		return (EOUTOFRANGE);
 	return (SUCCESS);
 }

@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/16 20:00:51 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/22 03:27:13 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/22 16:59:38 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ int	main(int argc, char **argv)
 	if (argc == 5 || argc == 6)
 	{
 		ft_simulate(&table, argv);
-		if (table.is_done && table.philo_count > 1)
+		if (table.is_done)
 			ft_release(&table);
 	}
 	else

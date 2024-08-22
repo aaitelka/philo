@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/16 20:27:06 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/21 15:03:50 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/22 16:56:30 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,12 @@ static void	ft_increment_eatcount(t_philo *philo)
 	}
 }
 
-static void	ft_feeder(t_philo *philo)
+static bool	ft_feeded(t_philo *philo)
 {
 	pthread_mutex_lock(&philo->fork);
 	ft_print(philo, TAKEN_FORK);
+	if (philo->table->philo_count == 1)
+		return (pthread_mutex_unlock(&philo->fork), false);
 	pthread_mutex_lock(philo->left);
 	ft_print(philo, TAKEN_FORK);
 	ft_print(philo, EAT);
@@ -50,6 +52,7 @@ static void	ft_feeder(t_philo *philo)
 	ft_increment_eatcount(philo);
 	pthread_mutex_unlock(philo->left);
 	pthread_mutex_unlock(&philo->fork);
+	return (true);
 }
 
 void	*ft_routine(void *arg)
@@ -62,11 +65,12 @@ void	*ft_routine(void *arg)
 	if (philo->id % 2 == 0)
 		ft_usleep(philo->table->timeto[EAT], philo->table);
 	ft_setlasteat(philo);
-	while (1)
+	while (true)
 	{
 		if (ft_is_done(philo->table))
 			break ;
-		ft_feeder(philo);
+		if (!ft_feeded(philo))
+			break ;
 		if (ft_is_done(philo->table))
 			break ;
 		ft_print(philo, SLEEP);

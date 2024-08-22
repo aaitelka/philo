@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/06 18:21:24 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/22 03:21:16 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/22 17:34:35 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,10 +79,9 @@ static int	ft_join(t_table *table)
 	return (SUCCESS);
 }
 
-static int	ft_table(t_table *table, char **argv)
+static void	ft_table(t_table *table, char **argv)
 {
 	int	index;
-	int	args;
 
 	index = -1;
 	while (++index < 3)
@@ -98,20 +97,18 @@ static int	ft_table(t_table *table, char **argv)
 	while (++index < table->philo_count)
 		table->philos[index].id = index + 1;
 	table->is_done = false;
-	args = ft_check_args(table);
-	if (args != SUCCESS)
-		return (args);
-	return (SUCCESS);
 }
 
 void	ft_simulate(t_table *table, char **argv)
 {
 	table->philo_count = ft_tolong(argv[1]);
+	if (table->philo_count == -1)
+		return (ft_error(MEARGS));
 	table->philos = malloc(sizeof(t_philo) * table->philo_count);
 	if (!table->philos)
 		return (ft_error(MEALLOCATE));
-	memset(table->philos, 0, sizeof(t_philo) * table->philo_count);
-	if (ft_table(table, argv) != SUCCESS)
+	ft_table(table, argv);
+	if (ft_check_args(table))
 		return (ft_error(MEARGS));
 	if (ft_locks(table) != SUCCESS)
 		return (ft_error(MEMUTEXINIT));
