@@ -54,5 +54,6 @@ dkms.conf
 .idea
 .vscode
 philo
+philo_bonus
 log
 build

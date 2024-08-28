@@ -1,34 +1,41 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   init.c                                             :+:      :+:    :+:   */
+/*   init_bonus.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/08/06 18:21:24 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/27 01:31:38 by aaitelka         ###   ########.fr       */
+/*   Created: 2024/08/22 19:00:38 by aaitelka          #+#    #+#             */
+/*   Updated: 2024/08/30 17:56:00 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "philo.h"
-
+#include "philo_bonus.h"
+#include <errno.h>
 static int	ft_locks(t_table *table)
 {
-	int	index;
+	int		i;
+	char	*sem[SEM_SIZE];
 
-	index = 0;
-	while (index < table->philo_count)
+	i = -1;
+	sem[LOCK] = NLOCK;
+	sem[TIME] = NTIME;
+	sem[PRINT] = NPRINT;
+	sem[ACCESS] = NACCESS;
+	table->name = sem;
+	table->done = sem_open(SDONE, O_CREAT | O_RDWR, 0644, 0);
+	if (table->done == SEM_FAILED)
+		perror("sem_open");
+	while (++i < SEM_SIZE)
 	{
-		if (pthread_mutex_init(&table->philos[index].fork, NULL) != SUCCESS)
-			return (EMUTEXINIT);
-		if (pthread_mutex_init(&table->philos[index].lock, NULL) != SUCCESS)
-			return (EMUTEXINIT);
-		index++;
+		sem_unlink(sem[i]);
+		if (i == 0)
+			table->sem[i] = sem_open(sem[i], O_CREAT | O_RDWR, 0644, table->philo_count);
+		else
+			table->sem[i] = sem_open(sem[i], O_CREAT | O_RDWR, 0644, 1);
+		if (table->sem[i] == SEM_FAILED)
+			perror("sem_open");
 	}
-	if (pthread_mutex_init(&table->lock, NULL) != SUCCESS)
-		return (EMUTEXINIT);
-	if (pthread_mutex_init(&table->print_lock, NULL) != SUCCESS)
-		return (EMUTEXINIT);
 	return (SUCCESS);
 }
 
@@ -37,45 +44,36 @@ static int	ft_philos(t_table *table, t_philo *philo)
 	int	index;
 
 	index = 0;
+	sem_wait(table->sem[TIME]);
+	table->start_time = ft_gettimestamp();
+	sem_post(table->sem[TIME]);
 	while (index < table->philo_count)
 	{
-		if (index > 0)
-			philo[index].left = &philo[index - 1].fork;
-		if (index == 0)
-			philo[index].left = &philo[table->philo_count - 1].fork;
 		philo[index].table = table;
-		if (pthread_create(&philo[index].philo, NULL, \
-				&ft_routine, &philo[index]) != SUCCESS)
-			return (ECREATE);
-		pthread_mutex_lock(&table->lock);
-		table->start_time = ft_gettimestamp();
-		pthread_mutex_unlock(&table->lock);
+		philo[index].philo = fork();
+		if(table->philos[index].philo == 0)
+		{
+			pthread_create(&philo->observer, NULL, ft_observer, philo);
+			pthread_detach(philo->observer);
+			ft_routine(&table->philos[index]);
+			exit(EXIT_SUCCESS);
+		}
+		else if (table->philos[index].philo == ERROR)
+			return (EFORK);
 		index++;
 	}
 	return (SUCCESS);
 }
 
-static int	ft_join(t_table *table)
+static int	ft_wait(t_table *table)
 {
 	t_philo	*philos;
 	int		index;
 
 	philos = table->philos;
-	index = 0;
-	if (table->philo_count == 1)
-	{
-		if (pthread_detach(philos->philo) != SUCCESS)
-			return (EJOIN);
-	}
-	else
-	{
-		while (index < table->philo_count)
-		{
-			if (pthread_join(philos[index].philo, NULL) != SUCCESS)
-				return (EJOIN);
-			index++;
-		}
-	}
+	index = -1;
+	while (++index < table->philo_count)
+		waitpid(philos[index].philo, NULL, 0);
 	return (SUCCESS);
 }
 
@@ -113,8 +111,7 @@ void	ft_simulate(t_table *table, char **argv)
 	if (ft_locks(table) != SUCCESS)
 		return (ft_error(MEMUTEXINIT));
 	if (ft_philos(table, table->philos) != SUCCESS)
-		return (ft_error(MECREATE));
-	ft_observer(table);
-	if (ft_join(table) != SUCCESS)
-		return (ft_error(MEJOIN));
+		return (ft_error(MEFORK));
+	if (ft_wait(table) != SUCCESS)
+		return (ft_error(MEWAIT));
 }
