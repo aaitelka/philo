@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/22 19:00:26 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/31 02:45:55 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/31 15:59:46 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ static void	ft_release(t_table *table)
 	int	index;
 
 	index = -1;
-	while (++index < SEM_SIZE)
+	while (table->is_done && ++index < SEM_SIZE)
 	{
 		if (table->sem[index])
 			sem_close(table->sem[index]);
@@ -47,8 +47,7 @@ int	main(int argc, char **argv)
 	{
 		ft_simulate(&table, argv);
 		ft_killall(&table);
-		if (table.is_done)
-			ft_release(&table);
+		ft_release(&table);
 	}
 	else
 		return (ft_error(MEARGS), FAILURE);

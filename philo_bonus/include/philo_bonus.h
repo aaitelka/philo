@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/22 18:59:32 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/31 02:26:02 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/31 15:59:17 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 # define PHILO_BONUS_H
 
 # include <stdio.h>
-# include <fcntl.h>
 # include <unistd.h>
 # include <stdlib.h>
 # include <string.h>
@@ -22,7 +21,6 @@
 # include <stdbool.h>
 # include <pthread.h>
 # include <sys/time.h>
-# include <sys/stat.h>
 # include <semaphore.h>
 # include <signal.h>
 

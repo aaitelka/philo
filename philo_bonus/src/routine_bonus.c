@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/16 20:27:06 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/31 02:29:20 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/31 15:24:05 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,10 @@ static bool	ft_feeded(t_philo *philo)
 	sem_wait(philo->table->sem[FORK]);
 	ft_print(philo, TAKEN_FORK);
 	if (philo->table->philo_count == 1)
+	{
+		ft_usleep(philo->table->timeto[DIE], philo->table);
 		return (sem_post(philo->table->sem[FORK]), false);
+	}
 	sem_wait(philo->table->sem[FORK]);
 	ft_print(philo, TAKEN_FORK);
 	ft_print(philo, EAT);
