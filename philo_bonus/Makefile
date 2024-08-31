@@ -6,14 +6,14 @@
 #    By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/08/22 19:07:44 by aaitelka          #+#    #+#              #
-#    Updated: 2024/08/28 16:21:11 by aaitelka         ###   ########.fr        #
+#    Updated: 2024/08/31 02:46:12 by aaitelka         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME     := philo_bonus
 INCLUDE  := include/
-CC       := cc -pthread
-CFLAGS   := -I$(INCLUDE) #-Wall -Werror -Wextra 
+CC       := cc -pthread 
+CFLAGS   := -I$(INCLUDE) -Wall -Werror -Wextra 
 
 SRCS     := $(shell find . -type f -name "*_bonus.c")
 

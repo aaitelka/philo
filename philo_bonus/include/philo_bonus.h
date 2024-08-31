@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/22 18:59:32 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/30 17:55:36 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/31 02:26:02 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,9 @@
 # define FAILURE 1
 # define MINTIME 60
 
-# define SDONE "/done"
+# define FULL 99
+# define DEAD 11
+
 # define NFORK "/fork"
 # define NTIME "/time"
 # define NLOCK "/lock"
@@ -46,15 +48,14 @@
 
 # define MEFORK "Error: fork failed\n"
 # define MEARGS "Error: Invalid arguments\n"
-# define MEJOIN "Error: pthread_join failed\n"
 # define MEWAIT "Error: waiting processes failed\n"
 # define MECREATE "Error: pthread_create failed\n"
 # define MEGETTIME "Error: gettimeofday failed\n"
 # define MEALLOCATE "Error: allocation, malloc failed\n"
-# define MEMUTEXINIT "Error: pthread_mutex_init failed\n"
-# define MEMUTEXLOCK "Error: pthread_mutex_lock failed\n"
+# define MEMUTEXINIT "Error: semaphore failed to init or open\n"
+# define MEMUTEXLOCK "Error: semaphore failed to lock\n"
 # define MEOUTOFRANGE "Error: number of philosophers out of range\n"
-# define MEMUTEXDESTROY "Error: pthread_mutex_destroy failed\n"
+# define MEMUTEXDESTROY "Error: sem_close or sem_unlink failed\n"
 
 typedef enum e_state
 {
@@ -64,6 +65,7 @@ typedef enum e_state
 	MUST_EAT,
 	THINK,
 	TAKEN_FORK,
+	DONE,
 }	t_state;
 
 enum e_code
@@ -104,15 +106,14 @@ typedef struct s_philo
 
 struct s_table
 {
-	int			philo_count;
-	long		timeto[4];
-	long		start_time;
-	bool		is_done;
-	bool		has_must_eat;
-	char		**name;
-	sem_t		*sem[SEM_SIZE];
-	sem_t		*done;
-	t_philo		*philos;
+	int		philo_count;
+	long	timeto[4];
+	long	start_time;
+	bool	is_done;
+	bool	has_must_eat;
+	char	**name;
+	sem_t	*sem[SEM_SIZE];
+	t_philo	*philos;
 };
 
 int		ft_check_args(t_table *table);

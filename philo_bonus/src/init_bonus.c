@@ -6,12 +6,12 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/22 19:00:38 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/30 17:56:00 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/31 02:27:18 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo_bonus.h"
-#include <errno.h>
+
 static int	ft_locks(t_table *table)
 {
 	int		i;
@@ -23,18 +23,15 @@ static int	ft_locks(t_table *table)
 	sem[PRINT] = NPRINT;
 	sem[ACCESS] = NACCESS;
 	table->name = sem;
-	table->done = sem_open(SDONE, O_CREAT | O_RDWR, 0644, 0);
-	if (table->done == SEM_FAILED)
-		perror("sem_open");
 	while (++i < SEM_SIZE)
 	{
 		sem_unlink(sem[i]);
 		if (i == 0)
-			table->sem[i] = sem_open(sem[i], O_CREAT | O_RDWR, 0644, table->philo_count);
+			table->sem[i] = sem_open(sem[i], O_CREAT, 0644, table->philo_count);
 		else
-			table->sem[i] = sem_open(sem[i], O_CREAT | O_RDWR, 0644, 1);
+			table->sem[i] = sem_open(sem[i], O_CREAT, 0644, 1);
 		if (table->sem[i] == SEM_FAILED)
-			perror("sem_open");
+			return (ERROR);
 	}
 	return (SUCCESS);
 }
@@ -51,7 +48,7 @@ static int	ft_philos(t_table *table, t_philo *philo)
 	{
 		philo[index].table = table;
 		philo[index].philo = fork();
-		if(table->philos[index].philo == 0)
+		if (table->philos[index].philo == 0)
 		{
 			pthread_create(&philo->observer, NULL, ft_observer, philo);
 			pthread_detach(philo->observer);
@@ -65,16 +62,23 @@ static int	ft_philos(t_table *table, t_philo *philo)
 	return (SUCCESS);
 }
 
-static int	ft_wait(t_table *table)
+static void	ft_wait(t_table *table)
 {
-	t_philo	*philos;
-	int		index;
+	pid_t	result;
+	int		status;
 
-	philos = table->philos;
-	index = -1;
-	while (++index < table->philo_count)
-		waitpid(philos[index].philo, NULL, 0);
-	return (SUCCESS);
+	while (table->is_done == false)
+	{
+		result = waitpid(-1, &status, WNOHANG);
+		if (result > 0)
+		{
+			if (WIFEXITED(status) || WIFSIGNALED(status))
+			{
+				table->is_done = true;
+				break ;
+			}
+		}
+	}
 }
 
 static void	ft_table(t_table *table, char **argv)
@@ -112,6 +116,5 @@ void	ft_simulate(t_table *table, char **argv)
 		return (ft_error(MEMUTEXINIT));
 	if (ft_philos(table, table->philos) != SUCCESS)
 		return (ft_error(MEFORK));
-	if (ft_wait(table) != SUCCESS)
-		return (ft_error(MEWAIT));
+	ft_wait(table);
 }

@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/16 20:27:06 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/30 18:00:32 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/31 02:29:20 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,9 @@ static void	ft_setlasteat(t_philo *philo)
 
 static void	ft_increment_eatcount(t_philo *philo)
 {
-	if (philo->table->timeto[MUST_EAT] != -1)
-	{
-		sem_wait(philo->table->sem[ACCESS]);
-		philo->eat_count++;
-		sem_post(philo->table->sem[ACCESS]);
-	}
+	sem_wait(philo->table->sem[ACCESS]);
+	philo->eat_count++;
+	sem_post(philo->table->sem[ACCESS]);
 }
 
 static bool	ft_feeded(t_philo *philo)
@@ -49,7 +46,8 @@ static bool	ft_feeded(t_philo *philo)
 	ft_print(philo, EAT);
 	ft_setlasteat(philo);
 	ft_usleep(philo->table->timeto[EAT], philo->table);
-	ft_increment_eatcount(philo);
+	if (philo->table->timeto[MUST_EAT] != ERROR)
+		ft_increment_eatcount(philo);
 	sem_post(philo->table->sem[FORK]);
 	sem_post(philo->table->sem[FORK]);
 	return (true);
@@ -64,16 +62,14 @@ void	ft_routine(t_philo	*philo)
 	ft_setlasteat(philo);
 	while (true)
 	{
-		// if (ft_is_done(philo->table))
-		// 	ft_kilall(philo);
 		if (ft_is_done(philo->table))
-			kill(philo->philo, SIGKILL);
+			exit(DEAD);
 		if (!ft_feeded(philo))
-			kill(philo->philo, SIGKILL);
+			exit(DEAD);
 		ft_print(philo, SLEEP);
 		ft_usleep(philo->table->timeto[SLEEP], philo->table);
-		// if (ft_is_done(philo->table))
-		// 	ft_kilall(philo);
+		if (ft_is_done(philo->table))
+			exit(DEAD);
 		ft_print(philo, THINK);
 	}
 }

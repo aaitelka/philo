@@ -6,7 +6,7 @@
 /*   By: aaitelka <aaitelka@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/22 19:00:56 by aaitelka          #+#    #+#             */
-/*   Updated: 2024/08/28 18:58:45 by aaitelka         ###   ########.fr       */
+/*   Updated: 2024/08/31 02:30:30 by aaitelka         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,13 +24,11 @@ static long	ft_getlasteat(t_philo *philo)
 
 static void	ft_die(t_table *table, int *id)
 {
-	if (*id == 0)
-		return ;
 	sem_wait(table->sem[LOCK]);
 	table->is_done = true;
 	sem_post(table->sem[LOCK]);
 	sem_wait(table->sem[PRINT]);
-	printf("%ld\t%d %s\n", ft_gettimestamp() - table->start_time, *id, MDIE);
+	printf("%ld\t%d %s", ft_gettimestamp() - table->start_time, *id, MDIE);
 	sem_post(table->sem[PRINT]);
 }
 
@@ -63,10 +61,7 @@ void	*ft_observer(void *arg)
 	{
 		if (ft_geteatcount(philo) > (philo->table->timeto[MUST_EAT])
 			&& philo->table->has_must_eat)
-		{
-			ft_eating_done(philo->table);
-				return (NULL);
-		}
+			(ft_eating_done(philo->table), exit(FULL));
 		last_eat = ft_getlasteat(philo);
 		if (last_eat == 0)
 		{
@@ -74,10 +69,7 @@ void	*ft_observer(void *arg)
 			continue ;
 		}
 		if (ft_gettimestamp() - last_eat >= philo->table->timeto[DIE])
-		{
-			ft_die(philo->table, &philo->id);
-			return (NULL);
-		}
+			(ft_die(philo->table, &philo->id), exit(DEAD));
 		i = (i + 1) % philo->table->philo_count;
 	}
 	return (NULL);
